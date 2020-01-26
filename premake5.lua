@@ -1,111 +1,122 @@
 workspace "Hazel"
-    architecture "x64"
+	architecture "x64"
 
-    configurations
-    {
-        "Debug",
-        "Release",
-        "Dist"
-    }
+	configurations
+	{
+		"Debug",
+		"Release",
+		"Dist"
+	}
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
+-- Include directories relative to root folder (solution directory)
+IncludeDir = {}
+IncludeDir["GLFW"] = "Hazel/vendor/GLFW/include"
+
+include "Hazel/vendor/GLFW"
+
 project "Hazel"
-    location "Hazel"
-    kind "SharedLib"
-    language "C++"
-    
-    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("bin-int/" .. outputdir .. "/%{prj.name}") 
+	location "Hazel"
+	kind "SharedLib"
+	language "C++"
 
-    pchheader "hzpch.h"
-    pchsource "Hazel/src/hzpch.cpp"
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
-    files
-    {
-        "%{prj.name}/src/**.h",
-        "%{prj.name}/src/**.cpp"
-    }
+	pchheader "hzpch.h"
+	pchsource "Hazel/src/hzpch.cpp"
 
-    includedirs
-    {
-        "%{prj.name}/vendor/spdlog/include",
-        "Hazel/src"
-    }
+	files
+	{
+		"%{prj.name}/src/**.h",
+		"%{prj.name}/src/**.cpp"
+	}
 
-    filter "system:windows"
-        cppdialect "C++17"
-        staticruntime "On"
-        systemversion "10.0.17763.0"
-    
-        defines
-        {
-            "HZ_PLATFORM_WINDOWS",
-            "HZ_BUILD_DLL",
-            "_WINDLL"
-        }
+	includedirs
+	{
+		"%{prj.name}/src",
+		"%{prj.name}/vendor/spdlog/include",
+		"%{IncludeDir.GLFW}"
+	}
 
-        postbuildcommands
-        {
-            ("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox")
-        }
+	links 
+	{ 
+		"GLFW",
+		"opengl32.lib"
+	}
 
-    filter "configurations:Debug"
-        defines "HZ_DEBUG"
-        symbols "On"
-    
-    filter "configurations:Release"
-        defines "HZ_RELEASE"
-        optimize "On"
-    
-    filter "configurations:Dist"
-        defines "HZ_DIST"
-        optimize "On"
-    
+	filter "system:windows"
+		cppdialect "C++17"
+		staticruntime "On"
+		systemversion "latest"
+
+		defines
+		{
+			"HZ_PLATFORM_WINDOWS",
+			"HZ_BUILD_DLL"
+		}
+
+		postbuildcommands
+		{
+			("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox")
+		}
+
+	filter "configurations:Debug"
+		defines "HZ_DEBUG"
+		symbols "On"
+
+	filter "configurations:Release"
+		defines "HZ_RELEASE"
+		optimize "On"
+
+	filter "configurations:Dist"
+		defines "HZ_DIST"
+		optimize "On"
+
 project "Sandbox"
-    location "Sandbox"
-    kind "ConsoleApp"
-    language "C++"
+	location "Sandbox"
+	kind "ConsoleApp"
+	language "C++"
 
-    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("bin-int/" .. outputdir .. "/%{prj.name}") 
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
-    files
-    {
-        "%{prj.name}/src/**.h",
-        "%{prj.name}/src/**.cpp"
-    }
+	files
+	{
+		"%{prj.name}/src/**.h",
+		"%{prj.name}/src/**.cpp"
+	}
 
-    includedirs
-    {
-        "Hazel/vendor/spdlog/include",
-        "Hazel/src"
-    }
+	includedirs
+	{
+		"Hazel/vendor/spdlog/include",
+		"Hazel/src"
+	}
 
-    links
-    {
-        "Hazel"
-    }
+	links
+	{
+		"Hazel"
+	}
 
-    filter "system:windows"
-        cppdialect "C++17"
-        staticruntime "On"
-        systemversion "10.0.17763.0"
-    
-        defines
-        {
-            "HZ_PLATFORM_WINDOWS"
-        }
+	filter "system:windows"
+		cppdialect "C++17"
+		staticruntime "On"
+		systemversion "latest"
 
-    filter "configurations:Debug"
-        defines "HZ_DEBUG"
-        symbols "On"
-    
-    filter "configurations:Release"
-        defines "HZ_RELEASE"
-        optimize "On"
-    
-    filter "configurations:Dist"
-        defines "HZ_DIST"
-        optimize "On"
+		defines
+		{
+			"HZ_PLATFORM_WINDOWS"
+		}
 
+	filter "configurations:Debug"
+		defines "HZ_DEBUG"
+		symbols "On"
+
+	filter "configurations:Release"
+		defines "HZ_RELEASE"
+		optimize "On"
+
+	filter "configurations:Dist"
+		defines "HZ_DIST"
+		optimize "On"
